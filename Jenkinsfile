@@ -17,8 +17,13 @@ pipeline {
             NEXUS_GRP_REPO = 'vpro-maven-group'
             NEXUS_USER = 'admin'
 <<<<<<< HEAD
+<<<<<<< HEAD
             NEXUS_PASS = 'Addy@47mule'
             NEXUSIP = '172.31.17.38'
+=======
+            NEXUS_PASS = 'pinspire@1234'
+            NEXUSIP = '10.0.0.152'
+>>>>>>> cbbe32318af8ac94bf98dc69f84dcde415b8326f
 =======
             NEXUS_PASS = 'pinspire@1234'
             NEXUSIP = '10.0.0.152'
@@ -28,8 +33,11 @@ pipeline {
             SONARSERVER = 'sonarserver'
             SONARSCANNER = 'sonarscanner'
 <<<<<<< HEAD
+<<<<<<< HEAD
         }
 =======
+=======
+>>>>>>> cbbe32318af8ac94bf98dc69f84dcde415b8326f
         }
 
         stages {
@@ -119,5 +127,9 @@ pipeline {
         }
 
 
+<<<<<<< HEAD
+    }
+>>>>>>> cbbe32318af8ac94bf98dc69f84dcde415b8326f
+=======
     }
 >>>>>>> cbbe32318af8ac94bf98dc69f84dcde415b8326f
