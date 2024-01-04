@@ -1,3 +1,8 @@
+def COLOR_MAP = [
+        'SUCCESS': 'good',
+        'FAILURE': 'danger'
+]
+
 pipeline {
         agent any
         tools {
@@ -11,10 +16,108 @@ pipeline {
             CENTRAL_REPO = 'vpro-maven-central'
             NEXUS_GRP_REPO = 'vpro-maven-group'
             NEXUS_USER = 'admin'
+<<<<<<< HEAD
             NEXUS_PASS = 'Addy@47mule'
             NEXUSIP = '172.31.17.38'
+=======
+            NEXUS_PASS = 'pinspire@1234'
+            NEXUSIP = '10.0.0.152'
+>>>>>>> cbbe32318af8ac94bf98dc69f84dcde415b8326f
             NEXUSPORT = '8081'
             NEXUS_LOGIN = 'nexuslogin'
             SONARSERVER = 'sonarserver'
             SONARSCANNER = 'sonarscanner'
+<<<<<<< HEAD
         }
+=======
+        }
+
+        stages {
+            stage('Build') {
+                steps {
+                    sh 'mvn -s settings.xml -DskipTests install'
+                }
+                post {
+                    success {
+                        echo "Now Arhiving....."
+                        archiveArtifacts artifacts: '**/*.war'
+                    }
+                }
+            }
+
+            stage('Test') {
+                steps {
+                    sh 'mvn test'
+                }
+            }
+
+            stage('Checkstyle Analysis') {
+                steps {
+                    sh 'mvn -s settings.xml checkstyle:checkstyle'
+                }
+            }
+
+            stage('Code Analysis With SonarQube') {
+                environment {
+                    scannerHome = tool "${SONARSCANNER}"
+                }
+                steps {
+                    withSonarQubeEnv("${SONARSERVER}") {
+                        sh '''${scannerHome}/bin/sonar-scanner -Dsonar.projectKey=vprofile \
+                                    -Dsonar.projectName=vprofile-repo \
+                                    -Dsonar.projectVersion=1.0 \
+                                    -Dsonar.sources=src/ \
+                                    -Dsonar.java.binaries=target \
+                                    -Dsonar.junit.reportsPath=target/surefire-reports/ \
+                                    -Dsonar.jacoco.reportsPath=target/jacoco.exec \
+                                    -Dsonar.java.checkstyle.reportPaths=target/checkstyleresult.xml'''
+                    }
+
+                }
+
+
+            }
+
+            stage('Quality Gate') {
+                steps {
+                    timeout(time: 01, unit: 'MINUTES') {
+                        waitForQualityGate abortPipeline:true
+                    }
+                }
+            }
+
+            stage('Upload Artifact') {
+                steps {
+                    nexusArtifactUploader(
+                    nexusVersion: 'nexus3',
+                    protocol: 'http',
+                    nexusUrl: "${NEXUSIP}:${NEXUSPORT}",
+                    groupId: 'QA',
+                    version: "${env.BUILD_ID}-${env.BUILD_TIMESTAMP}",
+                    repository: "${RELEASE_REPO}",
+                    credentialsId: "${NEXUS_LOGIN}",
+                    artifacts: [
+                            [artifactId: 'vproapp' ,
+                             classifier: '',
+                             file: 'target/vprofile-v2.war',
+                             type: 'war']
+                    ]
+                    )
+                }
+
+
+            }
+
+        }
+        post{
+            always {
+                echo 'Slack Notifications'
+                slackSend channel: '  #pipeline-notification',
+                        color: COLOR_MAP[currentBuild.currentResult],
+                        message: "*${currentBuild.currentResult}:* Job ${env.JOB_NAME} build ${env.BUILD_NUMBER} \n More info at: ${env.BUILD_URL}"
+            }
+        }
+
+
+    }
+>>>>>>> cbbe32318af8ac94bf98dc69f84dcde415b8326f
