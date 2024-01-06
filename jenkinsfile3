@@ -1,0 +1,51 @@
+pipeline {
+    agent any
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/your/repo.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                script {
+                    def mvnHome = tool 'Maven'
+                    sh "${mvnHome}/bin/mvn clean package"
+                }
+            }
+        }
+
+        stage('SonarQube Analysis') {
+            steps {
+                script {
+                    withSonarQubeEnv('SonarQube') {
+                        sh "${mvnHome}/bin/mvn sonar:sonar"
+                    }
+                }
+            }
+        }
+
+        stage('Deploy to Nexus') {
+            steps {
+                script {
+                    nexusArtifactUploader(
+                        nexusVersion: 'nexus3',
+                        protocol: 'http',
+                        nexusUrl: 'http://your-nexus-url',
+                        groupId: 'com.example',
+                        version: '1.0-SNAPSHOT',
+                        repository: 'maven-snapshots',
+                        credentialsId: 'your-nexus-credentials',
+                        artifacts: [
+                            [artifactId: 'your-artifact-id',
+                             classifier: '',
+                             file: 'target/*.jar']
+                        ]
+                    )
+                }
+            }
+        }
+    }
+}
